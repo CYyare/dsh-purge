@@ -28,7 +28,9 @@
   config:
     includeHarnessIdentity: false
     personaPrefix: ""
-    personaSuffix: Your working directory is {{cwd}}.
+    # [compat 0.2.2] 新版不注册 {{cwd}}：写模板会让 renderPrompt 抛错（issue #12）。
+    # 工作目录由 runtime context 提供，这里必须留空。
+    personaSuffix: ""
 
 - id: dsh-purge
   inject: [systemPrompt, tools]
