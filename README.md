@@ -34,11 +34,15 @@ A **personal fix fork** derived from the original `YuJunZhiXue/dsh-purge` projec
 - Upstream has stopped maintaining it; nothing here speaks for upstream;
 - **The repository name and the version series (1.1.x) continue upstream's numbering for compatibility and comparison only — this does not imply upstream published, approved or endorsed this fork.**
 
-**The only goal**: keep this plugin running on newer DeepSeek Harness builds, and document the obstacles met on the way.
+**This fork has exactly one stated purpose: repair.**
 
-## 2. Provenance and attribution (following the original author's terms)
+- Externally it claims only this: keep the original project **usable** on newer DeepSeek Harness builds — redo patch anchors, fix platform breakage, repair what stopped working.
+- Engineering work done along the way (regression tests, drift diagnosis, audit log, backup/rollback) is **repair done more thoroughly**, not new features.
+- **No new capability, no effectiveness work, no extra features** — and nobody is authorised to sell it on those grounds.
 
-The original README states the following conditions. They are quoted verbatim and honoured here:
+## 2. Terms of use, provenance and attribution (non-commercial + credit)
+
+The original README states the following conditions. They are quoted verbatim, honoured here, and **applied to this fork itself**:
 
 > **非盈利公益项目，严禁任何主体用于商业售卖、付费倒卖或黑灰产牟利，仅供技术参考。**
 > *(A non-profit public-interest project. Commercial sale, paid resale, or profit from illegal or grey-market activity is strictly forbidden; provided for technical reference only.)*
@@ -65,17 +69,31 @@ The original README states the following conditions. They are quoted verbatim an
 4. **Third-party code credited too**: patches `#90 #91 #97 #98 #99` come from [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe) (Apache-2.0); they are re-implemented here against this fork's anchors — see `ADAPTATION-NOTES.md` §6.9.
 5. **No repetition of named accusations**: the original README contains a "违规商用公示" section naming a specific third-party account. This fork **does not reproduce any of those names**; it keeps only a link to the archived original, so unverified allegations are not propagated.
 
-> If you build on or redistribute this fork, keep at minimum: the original author's credit, the source repository `YuJunZhiXue/dsh-purge`, this repository's URL, and items 1–2 above.
+6. **This fork forbids commercial use as well**: the original author's terms are adopted in full and not relaxed by the inherited MIT licence. Commercial use requires prior permission — see below.
+
+### Licence terms (this fork's position)
+
+| | Terms |
+|---|---|
+| **Allowed** | Personal study, research and self-use; non-commercial internal testing and evaluation; non-commercial derivative work that keeps attribution and this notice |
+| **Forbidden** | Any sale, paid course/community/livestream, paid installation or configuration service, bundling, resale, grey-market or criminal use, and monetising traffic driven by this project |
+| **Commercial licence** | Requires **prior** permission: the original right holder's (where reachable) **and** the written consent of this repository's maintainer — both, not either |
+| **Breach** | Permission terminates immediately; all consequences fall on the user and are unrelated to this fork's maintainer |
+
+> If you build on or redistribute this fork, keep at minimum: the original author's credit, the source repository `YuJunZhiXue/dsh-purge`, this repository's URL, the non-commercial terms above, and this notice in full.
 
 ## 3. Notice and disclaimer (read before use)
 
 **1. Unofficial.** A third-party fork with no authorisation, review or recommendation from the original author, the mirror maintainer, or DeepSeek. Names, badges and wording do not imply endorsement.
 
-**2. Copyright and liability boundary.** The code is MIT-licensed, but the original author's **non-commercial and attribution conditions** (previous section) are conditions of use; this fork complies with and relays them. Commercial use that violates them is the user's own responsibility and unrelated to this fork.
+**2. Copyright, licence and liability boundary.** The code inherits the original MIT licence; on top of it, the original author's **non-commercial and attribution conditions** are conditions of use, adopted here **in full and applied to this fork itself** — in other words, **this repository permits no commercial use whatsoever**.
+Any commercial use that violates these terms, and all of its consequences (legal liability, claims, platform penalties), are borne by the user and are **unrelated to this fork's maintainer**.
 
 **3. Scope.** Anchors, Windows compatibility, diagnostics/audit tooling, regression tests, release pipeline. **No new offensive capability, no prompt engineering, no promised outcome.**
 
-**4. Technical risk is yours.** This project **modifies host program files**, **disables approval and sandbox restrictions**, and **injects custom prompts**. Known consequences include: an unbootable or corrupted host, lost or rewritten sessions/settings/data, uncontrolled model output, unexpected token spend, failed updates, and a host reinstall. Back up the machine first and prefer a disposable environment.
+**4. Technical risk is yours; consequences are unrelated to this repository.** This project **modifies host program files**, **disables approval and sandbox restrictions**, and **injects custom prompts**. Known consequences include: an unbootable or corrupted host, lost or rewritten sessions/settings/data, uncontrolled model output, unexpected token spend, failed updates, and a host reinstall. Back up the machine first and prefer a disposable environment.
+
+**Every consequence of using this project — technical failure, data loss, account bans, financial loss, legal liability — is borne by the user. The maintainer accepts no responsibility, offers no compensation, gives no warranty, and does not promise continued maintenance.**
 
 **5. Lawful use only.** Not for unauthorized penetration testing, intrusion, fraud, privacy violations, or anything violating your jurisdiction's law or a target's terms of service. **Whether authorization exists, who granted it, and how far it reaches are yours to determine and defend.** Nothing here is legal advice.
 
