@@ -563,6 +563,49 @@ If nothing is found, set `DSH_BASE` / `DSH_DESKTOP_INSTALL`. No files are change
 
 What changed, and the zip, are on [Releases](https://github.com/YuJunZhiXue/dsh-purge/releases). To publish, bump the version in `package.json`, write Chinese and English notes in `release-notes.md`, and push `master`. Pushing the same version again does not publish another package.
 
+
+## Maintenance and upgrades (this branch)
+
+After upstream ships a new DSH, these three steps usually locate and fix the breakage in about ten minutes:
+
+```bash
+# 1) Health check: host version / patch coverage / drift / runtime guards / backups / asar state
+node bin/dsh-purge.js --doctor
+
+# 2) If something drifted, re-anchor with a real snippet copied from the host — no source edit, no release needed
+node bin/dsh-purge.js --reanchor set <patchId> <patternIndex> "<verbatim text from the host>"
+node bin/dsh-purge.js --reanchor list             # show current overrides
+node bin/dsh-purge.js --reanchor clear <patchId>  # drop overrides, back to factory anchors
+
+# 3) Regression + release
+npm test                                          # fixture regression against real host sources
+npm run release -- --tag                          # checks → tests → pack → sha256 → tag
+```
+
+**Green means all of these hold** in `--doctor`:
+
+- `drift` is 0;
+- `retired` only lists features upstream actually removed (#56 #77 #80 today);
+- backups report `N/N verified`;
+- runtime guards report `enabled`.
+
+If any of them fails, upstream rewrote that code: re-anchor with step 2, then bake the new anchor into `lib/compat-022.js` and cut a release.
+
+**When something looks wrong, read the audit log first:**
+
+```bash
+node bin/dsh-purge.js --audit 20      # last 20 apply / revert / reanchor entries
+```
+
+**Rollback, two levels:**
+
+| Level | How |
+|---|---|
+| Single file | Every patched file has `<file>.dshpurge.bak` beside it, tracked in `$DSH_HOME/dsh-purge/backups/<hash>/manifest.json`. `--revert` verifies sha256 first and refuses (`bak_corrupt`) if the backup was modified. |
+| Whole host | The official desktop renamed `app.asar` to `app.asar.bak` and extracted to `resources/app`; rename it back and move `app` away to return to the stock build. |
+
+Per-release detail (what changed, why, how it was verified) lives in [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) and [COMPAT.md](COMPAT.md).
+
 ## Notes
 
 - Scope is rendered copy, defaults, and runtime logic inside local `@deepseek-ai/*` packages, plus override files and rule sets under the harness home.

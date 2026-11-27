@@ -583,6 +583,49 @@ flowchart LR
 
 每一版改了什么、安装包在 [Releases](https://github.com/YuJunZhiXue/dsh-purge/releases)。发新版时把 `package.json` 的版本号改掉，中英文说明写进 `release-notes.md`，推到 `master` 就会自动打包。同一版本再推送不会重复发包。
 
+
+## 维护与升级（本分支）
+
+上游升级 DSH 后，按这三步走，通常 10 分钟内能定位并修好：
+
+```bash
+# 1) 体检：宿主版本 / 补丁覆盖 / 漂移 / 守卫 / 备份 / asar 状态
+node bin/dsh-purge.js --doctor
+
+# 2) 有漂移（drift）就用「宿主里拷出来的真实片段」重锚，不必改源码、不必等发版
+node bin/dsh-purge.js --reanchor set <补丁号> <第几个 pattern> "<从宿主里拷的原文>"
+node bin/dsh-purge.js --reanchor list        # 查看现有覆盖
+node bin/dsh-purge.js --reanchor clear <补丁号>   # 恢复出厂锚点
+
+# 3) 回归 + 发版
+npm test                                     # 用真实宿主源码做的夹具回归
+npm run release -- --tag                     # 检查 → 测试 → 打包 → sha256 → 打 tag
+```
+
+**判断标准**：`--doctor` 里应该同时满足
+
+- 漂移 `drift` 为 0；
+- `retired` 只剩官方已删功能的几条（当前 #56 #77 #80）；
+- 备份 `N/N 校验通过`；
+- 运行时守卫 `已启用`。
+
+任何一项掉了就说明上游改写了对应代码，按第 2 步重锚，再把新锚点写进 `lib/compat-022.js` 发版固化。
+
+**出问题时先看审计**：
+
+```bash
+node bin/dsh-purge.js --audit 20      # 最近 20 条 apply / revert / reanchor 记录
+```
+
+**回滚**（两级）：
+
+| 层级 | 做法 |
+|---|---|
+| 单个文件 | 每个被改的文件旁边有 `<文件>.dshpurge.bak`，清单在 `$DSH_HOME/dsh-purge/backups/<hash>/manifest.json`；`--revert` 前会核对 sha256，备份被改过就报 `bak_corrupt` 不恢复 |
+| 整个宿主 | 官方桌面把 `app.asar` 改名成了 `app.asar.bak`、解包到 `resources/app`；改回去并移走 `app` 即回到官方原版 |
+
+更多细节（每轮改了什么、为什么改、怎么验）见 [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) 与 [COMPAT.md](COMPAT.md)。
+
 ## 说明
 
 - 改动范围是本机 `@deepseek-ai/*` 包里的渲染文案、默认策略和执行逻辑，以及用户目录下的覆盖文件与规则集。
