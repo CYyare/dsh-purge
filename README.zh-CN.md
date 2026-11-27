@@ -126,7 +126,7 @@
 | 回滚 | 每个被改文件旁 `.dshpurge.bak` + sha256 清单；`--revert` 前校验，备份被改过就拒绝；`scripts/backfill-backups.mjs` 可从 `app.asar` 找回原始文件 |
 | 运行时 | Tier A 守卫（审批放行 / fs 放行）；Tier B 按 id 关插件（重复提醒、结果剪枝） |
 | 其他 | Windows 备份 EPERM、rename 覆盖、单实例写入（不误伤其它安装）等平台问题 |
-| 发布 | tag 触发 CI（版本一致性 → 语法 → 测试 → 打包 → sha256 → Release） |
+| 发布 | CI 只跑语法与测试；出包与发布手动执行，不自动发布 |
 
 细节与逐轮记录见 [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) 与 [COMPAT.md](COMPAT.md)。
 
@@ -147,6 +147,7 @@
 更多分支：[GitHub 搜索 `dsh-purge`](https://github.com/search?q=dsh-purge&type=repositories)。
 
 ## 六、安装与维护（本分支）
+
 
 npm 上的 `dsh-purge` 是**空壳占位包**（`0.0.0-stage`，331 字节），装它不是本插件。本分支请从本仓库安装：
 

@@ -1,28 +1,21 @@
-name: Release
+name: Test
 
-# 只在打 tag 时发布：普通提交不会触发，避免每次 push master 都红/都建 release。
+# 只跑测试，不发布。发布改为手动：确认测试绿后自己打 tgz、自己传。
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [master]
+  workflow_dispatch:
 
 permissions:
-  contents: write
-
-concurrency:
-  group: release-${{ github.repository }}
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  release:
-    # 只在本仓库发布；fork 上跑测试但不发 release。
+  test:
     if: github.repository == 'CYyare/dsh-purge'
-    # 与本地开发环境一致（我们的夹具回归是在 Windows 上验证过的）。
     runs-on: windows-latest
     defaults:
       run:
         shell: bash
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,48 +25,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: 版本一致性（tag 必须等于 package.json）
-        run: |
-          set -euo pipefail
-          version="$(node -p "require('./package.json').version")"
-          tag="${GITHUB_REF_NAME}"
-          echo "package=$version tag=$tag"
-          test "v$version" = "$tag"
-
       - name: 语法门禁
         run: |
-          set -euo pipefail
-          for f in lib/index.js lib/core.js lib/anchors.js lib/runtime-guards.js bin/dsh-purge.js; do
-            node --check "$f"
-          done
+          set -e
+          for f in $(git ls-files '*.js' '*.mjs'); do node --check "$f"; done
 
       - name: 夹具回归（npm test）
-        run: npm test
-
-      - name: 打包 + 校验和
         run: |
-          set -euo pipefail
-          version="$(node -p "require('./package.json').version")"
-          tgz="$(npm pack --ignore-scripts --silent | tail -n 1)"
-          node -e "
-            const fs=require('fs'),crypto=require('crypto');
-            const f=process.argv[1];
-            const d=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
-            fs.writeFileSync(f+'.sha256', d+'  '+f+'\n');
-            console.log('sha256', d);
-          " "$tgz"
-          echo "TGZ=$tgz" >> "$GITHUB_ENV"
-
-      - name: 创建 GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          tag="${GITHUB_REF_NAME}"
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "already published: $tag"
-            exit 0
-          fi
-          gh release create "$tag" --title "$tag" --generate-notes
-          gh release upload "$tag" "$TGZ" "$TGZ.sha256" --clobber
-          echo "published $tag"
+          npm install --no-audit --no-fund
+          npm test

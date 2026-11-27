@@ -5,6 +5,26 @@
 
 ---
 
+
+## 1.1.95 — 发布流程改为手动，CI 只跑测试
+
+**其他**
+- `.github/workflows` 改为仅执行语法门禁与夹具回归，不再自动打 tag / 建 Release
+- 发布改手动：测试绿后本地 `npm run release`，产物自己上传
+- 仓库整理：忽略本地开发笔记，README / CHANGELOG 清理
+
+## 1.1.93 — 吸收遥测/埋点全关（#93 #94 #95）
+
+**吸收**（来源：CallMeGuLab/dsh-purge-safe，Apache-2.0，按本分支锚点重写）
+- `#93` `PRODUCT_ANALYTICS_DEFAULT_OFF`：产品埋点 `enabled` 默认从 `true` 改 `false`
+- `#94` `PRODUCT_TELEMETRY_OTEL_NOOP`：产品遥测 OTLP 导出器构造后端口空转，不建管道、不上报
+- `#95` `SESSION_TELEMETRY_OTEL_DISABLED`：会话遥测默认 `DISABLED`（原 `FEEDBACK_ONLY`），反馈也不走 OTLP
+- 补丁总数 87 → **90**；`targetFiles` 新增 `product-analytics` / `product-telemetry-otel` / `session-telemetry-otel`
+
+**结论（#101 不需要移植）**：0.2.2-rc.5 的 PTC 已经是 `Optional wider sandbox mode … Approval is auto-granted.`，上游自己把措辞中性化了，无需再打补丁。
+
+**验证**：三条对真实宿主逐条命中且 `node --check` 通过；`npm test` 25 项全绿。
+
 ## 1.1.91 — 定位改为「长期维护的改进分支」
 
 **其他**

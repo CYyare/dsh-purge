@@ -187,6 +187,20 @@ node scripts/backfill-backups.mjs             # 实际补 + 刷新清单
 
 现在 `--revert` 能覆盖整棵补丁树，`app.asar.bak` 退化成"连解包目录都没了"时的最后手段。
 
+## 6.11 吸收：遥测 / 埋点全关（1.1.93）
+
+来源 [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe)（Apache-2.0），按本分支锚点重写。
+
+| # | 目标 | 改动 |
+| --- | --- | --- |
+| 93 | `dsh-client-product-analytics/lib/index.js` | `enabled: z.boolean().default(true).volatile()` → `false` |
+| 94 | `dsh-host-product-telemetry-otel/lib/index.js` | 构造后 `this.reporter = { emit() {}, shutdown() {} }` 并 early return，不初始化 OTLP 管道 |
+| 95 | `dsh-session-telemetry-otel/lib/index.js` | `DEFAULT_TELEMETRY_MODE` 从 `FEEDBACK_ONLY` 改 `DISABLED` |
+
+**#101 不移植**：0.2.2-rc.5 的 PTC 描述本来就是 `Optional wider sandbox mode for this complete program execution. Approval is auto-granted.`——上游已自行中性化，我们的 #60 也是同类改动，无需重复。
+
+**验证**：三条对真实宿主命中各 1 次，替换后 `node --check` 通过；`npm test` 25 项全绿。
+
 ## 7. 已知边界
 
 - **retired（官方已删功能）**：#32 #53（Web 文案）、#56 #77（rewind）、#80（official minimal 自带 `tool-fs`）。不计入漂移。

@@ -119,7 +119,7 @@ Any commercial use that violates these terms, and all of its consequences (legal
 | Rollback | `.dshpurge.bak` next to every patched file + sha256 manifest; `--revert` refuses a tampered backup; `scripts/backfill-backups.mjs` recovers originals from `app.asar` |
 | Runtime | Tier A guards (approval allow / fs allow); Tier B config disables (repeat reminders, result pruning) |
 | Platform | Windows backup EPERM, rename-overwrite, single-instance writes |
-| Release | Tag-triggered CI: version check → syntax → tests → pack → sha256 → Release |
+| Release | CI runs syntax + tests only; packing and publishing are manual, nothing is auto-published |
 
 Per-release detail lives in [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) and [COMPAT.md](COMPAT.md).
 
@@ -136,6 +136,7 @@ Per-release detail lives in [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) and [COMP
 | [c3cvld7aag/fujiang-dsh](https://github.com/c3cvld7aag/fujiang-dsh) | Prompt-only approach that never touches host files |
 
 ## 6. Install and maintain (this fork)
+
 
 The npm package `dsh-purge` is a **placeholder stub** (`0.0.0-stage`, 331 bytes) — that is not this plugin. Install from this repository:
 
