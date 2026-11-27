@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import * as core from "../lib/core.js";
 import * as rules from "../lib/rules.js";
 import * as anchors from "../lib/anchors.js";
+import * as doctor from "../lib/doctor.js";
 import { summarizeRuntimeGuards } from "../lib/runtime-guards.js";
 
 const args = process.argv.slice(2);
@@ -51,7 +52,7 @@ async function main() {
   dsh-purge --revert     回滚还原
   dsh-purge --uninstall  卸载插件（已应用则先还原）
   dsh-purge --edit       编辑注入文件 prompt-inject.md
-  dsh-purge --doctor     自检：宿主版本 / 漂移 / 备份 / asar / 注入体积
+  dsh-purge --doctor     自检：版本 / 漂移 / 守卫 / asar / 注入体积（加 --json 输出结构化报告）
   dsh-purge --reanchor list                    查看锚点覆盖
   dsh-purge --reanchor set <id> <index> <原文>  用宿主里的真实片段重锚一条补丁
   dsh-purge --reanchor clear <id> [index]      删除覆盖（恢复出厂锚点）
@@ -108,54 +109,44 @@ function readHostVersion(aiBase) {
   return "";
 }
 
-async function runDoctor() {
+async function runDoctor(rawArgs = []) {
   const state = await core.gatherState();
   const aiBase = state.ai_base;
   const home = state.dsh_home;
-  console.log("dsh-purge doctor");
-  console.log(`  插件版本         ${pluginVersion() || "(未知)"}  ← 磁盘上这份代码`);
-  const lastApply = lastAppliedRev(home);
-  console.log(`  上次应用         ${lastApply || "(未记录)"}${lastApply && lastApply !== `apply:${pluginVersion()}` ? "  ← 与磁盘版本不一致，宿主里跑的还是旧的" : ""}`);
-  console.log(`  宿主 surface     ${state.surface || "web"}`);
-  console.log(`  DSH_HOME         ${home || "(未定位)"}`);
-  console.log(`  插件根 aiBase    ${aiBase || core.missingAiBaseMessage()}`);
-  if (aiBase) console.log(`  宿主版本         ${readHostVersion(aiBase) || "未知"}`);
-  const total = core.ALL_PATCHES.length;
-  const applied = Object.values(state.patch_status || {}).filter((v) => v === "applied" || v === "already").length;
-  const pending = Object.values(state.patch_status || {}).filter((v) => v === "pending").length;
-  console.log(`  补丁             ${applied}/${total} 生效，${pending} 待应用`);
-  const retired = core.ALL_PATCHES.filter((p) => p.retired);
-  if (retired.length) console.log(`  已删功能 retired  ${retired.map((p) => "#" + p.id).join(" ")}`);
+
   let drift = { drift: [], missing: [], pending: [] };
   if (aiBase) {
-    try { drift = await core.patchDrift(aiBase); } catch (e) { console.log(`  ⚠ 漂移诊断失败 ${e && e.message ? e.message : e}`); }
+    try { drift = await core.patchDrift(aiBase); } catch { /* 诊断失败也照常出报告 */ }
   }
-  if (drift.drift.length) {
-    console.log(`  漂移 drift       ${drift.drift.length} 条（需要重锚）`);
-    for (const row of drift.drift) {
-      const idx = row.indexes && row.indexes.length ? row.indexes[0] : 0;
-      const f = (row.detail && row.detail[0] && row.detail[0].file) || "";
-      console.log(`    #${String(row.id).padEnd(3)} ${String(row.name).padEnd(34)} ${f}`);
-      console.log(`         重锚: dsh-purge --reanchor set ${row.id} ${idx} "<从宿主里拷的原文>"`);
-    }
-  } else if (aiBase) {
-    console.log("  漂移 drift       0 条");
+  let injectBytes = 0;
+  try { injectBytes = fs.statSync(path.join(home || "", "prompt-inject.md")).size; } catch { /* 没有注入文件 */ }
+  let asarSealed = false;
+  try { asarSealed = core.desktopAsarStillSealed(); } catch { /* ignore */ }
+
+  const report = doctor.buildDoctorReport({
+    pluginVersion: pluginVersion(),
+    appliedRev: lastAppliedRev(home),
+    surface: state.surface,
+    home,
+    aiBase,
+    hostVersion: aiBase ? readHostVersion(aiBase) : "",
+    patchStatus: state.patch_status,
+    patchTotal: core.ALL_PATCHES.length,
+    retired: core.ALL_PATCHES.filter((x) => x.retired).map((x) => x.id),
+    drift,
+    overrides: anchors.listOverrides(home),
+    guards: readGuardState(),
+    asarSealed,
+    injectBytes,
+    settleGuard: fs.existsSync(path.join(home || "", "dsh-purge", "settle-restart.guard")),
+  });
+
+  // --json：给 issue / 脚本用；文本输出与它同源，不会两边对不上。
+  if (rawArgs.includes("--json")) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
   }
-  if (drift.missing.length) console.log(`  未装可选包       ${drift.missing.map((r) => "#" + r.id).join(" ")}`);
-  const ov = anchors.listOverrides(home);
-  console.log(`  锚点覆盖         ${ov.length} 条${ov.length ? "（" + ov.map((r) => "#" + r.patchId + "[" + r.index + "]").join(" ") + "）" : ""}`);
-  const guardState = readGuardState();
-  const guardText = guardState.state === "on"
-    ? `已启用（审批=${guardState.approval ? "allow" : "原样"}, fs×${guardState.fs}${guardState.errors ? ", 报错:" + guardState.errors : ""}, ${guardState.at}）`
-    : guardState.state === "off" ? "已关闭（runtimeGuards=false）" : `未启用（${guardState.detail || "未知"}）`;
-  console.log(`  运行时守卫       ${guardText}`);
-  let asar = "unpacked";
-  try { asar = core.desktopAsarStillSealed() ? "sealed（补丁还没进内存，需要换包重启）" : "unpacked（已从解包目录启动）"; } catch { /* ignore */ }
-  console.log(`  asar 状态        ${asar}`);
-  const injectPath = path.join(home || "", "prompt-inject.md");
-  try { console.log(`  注入体积         ${fs.statSync(injectPath).size} bytes`); } catch { console.log("  注入体积         (未找到 prompt-inject.md)"); }
-  const guard = path.join(home || "", "dsh-purge", "settle-restart.guard");
-  console.log(`  待重启 guard     ${fs.existsSync(guard) ? "存在（自动结算会冷却 180s）" : "无"}`);
+  console.log(doctor.renderDoctorReport(report));
 }
 
 function runReanchor(rawArgs) {
@@ -188,7 +179,7 @@ function runReanchor(rawArgs) {
   }
   console.log("用法: dsh-purge --reanchor list | set <id> <index> <pattern> | clear <id> [index]");
 }
-  if (mode === "--doctor") { await runDoctor(); return; }
+  if (mode === "--doctor") { await runDoctor(args); return; }
   if (mode === "--reanchor") { runReanchor(args); return; }
   const state = await core.gatherState();
   console.log(printStatus(state));

@@ -24,6 +24,14 @@
   name: dsh-redteam-mode/ui
   disabled: true
 
+# Tier B：#18 / #19 的等价做法——按 id 关掉这两个插件，而不是去改它们被打包的源码。
+# id 在新版里对不上时，loader 只会警告一句 "entry not found"，不会报错。
+- id: repeat-tool-reminder
+  disabled: true
+
+- id: tool-result-pruner
+  disabled: true
+
 - id: system-prompt
   config:
     includeHarnessIdentity: false

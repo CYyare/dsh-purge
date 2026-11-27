@@ -113,6 +113,12 @@ revertAll: reverted=48 errors=0 还原一致=58/58 剩余bak=0
 
 重启宿主后生效（插件从 profile 重新加载）。`purgeLog` 里会有一行 `[runtime.guards] approval=true fs=3`。
 
+## 6.7 Tier B：按 id 关插件 + doctor --json（1.1.78）
+
+- **#18 / #19**：这两条补丁的目的就是"别注入提醒 / 别剪枝"。直接在 `cordis.patch.yml` 里按 id 写 `disabled: true`（`repeat-tool-reminder`、`tool-result-pruner`）比改被打包的源码稳——id 对不上时 loader 只警告一句，不会报错；文件补丁仍作为兜底保留。
+- **`--doctor --json`**：新增 `lib/doctor.js`，`buildDoctorReport()` 归一化数据，文本与 JSON 共用同一份；单测锁住版本 stale、漂移索引、retired/missing 排序。
+- 顺带修掉一个真 bug：`toList()` 原来用 `filter(Boolean)`，会把漂移索引 `0` 过滤掉——写测试才发现。
+
 ## 7. 已知边界
 
 - **retired（官方已删功能）**：#32 #53（Web 文案）、#56 #77（rewind）、#80（official minimal 自带 `tool-fs`）。不计入漂移。
