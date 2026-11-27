@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as core from "../lib/core.js";
 import * as rules from "../lib/rules.js";
 import * as anchors from "../lib/anchors.js";
@@ -57,6 +58,26 @@ async function main() {
   }
 
 
+const PLUGIN_ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+
+/** 磁盘上这份插件自己的版本（不是宿主加载的那份）。 */
+function pluginVersion() {
+  try {
+    return String(JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, "package.json"), "utf8")).version || "");
+  } catch {
+    return "";
+  }
+}
+
+/** 上一次「应用」写下的版本，用来对比磁盘代码是否已经打进宿主。 */
+function lastAppliedRev(home) {
+  try {
+    return String(fs.readFileSync(path.join(home || "", "dsh-purge", "installed-rev"), "utf8")).trim();
+  } catch {
+    return "";
+  }
+}
+
 function readHostVersion(aiBase) {
   if (!aiBase) return "";
   for (const rel of [["dsh", "package.json"], ["package.json"]]) {
@@ -74,6 +95,9 @@ async function runDoctor() {
   const aiBase = state.ai_base;
   const home = state.dsh_home;
   console.log("dsh-purge doctor");
+  console.log(`  插件版本         ${pluginVersion() || "(未知)"}  ← 磁盘上这份代码`);
+  const lastApply = lastAppliedRev(home);
+  console.log(`  上次应用         ${lastApply || "(未记录)"}${lastApply && lastApply !== `apply:${pluginVersion()}` ? "  ← 与磁盘版本不一致，宿主里跑的还是旧的" : ""}`);
   console.log(`  宿主 surface     ${state.surface || "web"}`);
   console.log(`  DSH_HOME         ${home || "(未定位)"}`);
   console.log(`  插件根 aiBase    ${aiBase || core.missingAiBaseMessage()}`);
