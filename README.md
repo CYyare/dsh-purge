@@ -606,6 +606,27 @@ node bin/dsh-purge.js --audit 20      # last 20 apply / revert / reanchor entrie
 
 Per-release detail (what changed, why, how it was verified) lives in [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) and [COMPAT.md](COMPAT.md).
 
+
+## Related projects (community forks, for reference only)
+
+The upstream `YuJunZhiXue/dsh-purge` was deleted; what remains is a family of community forks. Check these first when a new host breaks — but note none of them is maintained by this repository, and each keeps its own license and attribution rules:
+
+| Repository | What it is | Worth reading for |
+|---|---|---|
+| [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge) | Full mirror of the deleted upstream (this branch's 1.1.71 baseline) | The original patch table and install/path-detection notes |
+| [kingcharleslzy-ai/dsh-purge](https://github.com/kingcharleslzy-ai/dsh-purge) | Community 1.7.x, the most engineered fork | `anchor-overrides.json` re-anchoring, `patchDrift()`, `diagnose`, a hundred-plus `node:test` suites, backup snapshots and release discipline |
+| [ZXEB/dsh-purge](https://github.com/ZXEB/dsh-purge) | 1.1.76, already ported to 0.2.2-rc.5 | `ADAPTATION-NOTES.md` round-by-round records and its version matrix; rc.5 anchors for `#13 #14 #35 #54 #60 #62 #67 #74` |
+| [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe) | 2.0.0, explicitly targets 0.2.2-rc.5 | A second implementation on the same host version — good for cross-checking anchors |
+| [realMisakaMikoto/dsh-purge](https://github.com/realMisakaMikoto/dsh-purge) | 1.2.3, for 0.2.x | An alternative fix for `#40 complete-prompt` |
+| [evilevil/dsh-purge-021rc2](https://github.com/evilevil/dsh-purge-021rc2) | Frozen at 0.2.1-rc.2 | How anchors were migrated for that host |
+| [NANA7MI0/dsh-purge-go](https://github.com/NANA7MI0/dsh-purge-go) | Ported to DSH-GO (mobile) | The minimal implementation: prompt injection plus engine patches only |
+| [mortyandtimo/dsh-purge-plus](https://github.com/mortyandtimo/dsh-purge-plus) | Enhanced fork | Network-side (TUN / fake-ip) extras, unrelated to patch compatibility |
+| [c3cvld7aag/fujiang-dsh](https://github.com/c3cvld7aag/fujiang-dsh) | Prompt-only (392 KB, never touches host files) | The degradation path when you cannot patch the host; also shows the ceiling of prompt-only |
+
+Find more: [GitHub search for `dsh-purge`](https://github.com/search?q=dsh-purge&type=repositories) (390+ results; sort by stars or last push).
+
+**How to use this list**: when `--doctor` reports a patch as `drift`, search these repositories for the same patch number (e.g. `#62`). Somebody has probably already written the new anchor; copying it beats guessing from minified code — just run `npm test` afterwards to confirm.
+
 ## Notes
 
 - Scope is rendered copy, defaults, and runtime logic inside local `@deepseek-ai/*` packages, plus override files and rule sets under the harness home.

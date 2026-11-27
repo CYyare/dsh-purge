@@ -626,6 +626,27 @@ node bin/dsh-purge.js --audit 20      # 最近 20 条 apply / revert / reanchor 
 
 更多细节（每轮改了什么、为什么改、怎么验）见 [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) 与 [COMPAT.md](COMPAT.md)。
 
+
+## 相关项目（社区分支，仅作参考）
+
+上游 `YuJunZhiXue/dsh-purge` 已删库，现在是一堆社区分支。修复新版本时先看这里，能少走很多弯路（都不是本仓库维护的，引用前先看对方 LICENSE 与署名要求）：
+
+| 仓库 | 定位 | 适合参考什么 |
+|---|---|---|
+| [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge) | 上游全量镜像（本分支基线 1.1.71） | 原始补丁表、README 里的安装/路径探测说明 |
+| [kingcharleslzy-ai/dsh-purge](https://github.com/kingcharleslzy-ai/dsh-purge) | Community 1.7.x，工程化最完整 | `anchor-overrides.json` 锚点重定向、`patchDrift()`、`diagnose`、上百条 `node:test`、备份快照与发布纪律 |
+| [ZXEB/dsh-purge](https://github.com/ZXEB/dsh-purge) | 1.1.76，已适配 0.2.2-rc.5 | `ADAPTATION-NOTES.md` 逐轮记录、版本矩阵；`#13 #14 #35 #54 #60 #62 #67 #74` 的 rc.5 锚点写法 |
+| [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe) | 2.0.0，明确标注 0.2.2-rc.5 | 同一宿主版本的另一套实现，锚点可交叉核对 |
+| [realMisakaMikoto/dsh-purge](https://github.com/realMisakaMikoto/dsh-purge) | 1.2.3，面向 0.2.x | `#40 complete-prompt` 的另一种修法 |
+| [evilevil/dsh-purge-021rc2](https://github.com/evilevil/dsh-purge-021rc2) | 停在 0.2.1-rc.2 | 早期版本的锚点迁移思路 |
+| [NANA7MI0/dsh-purge-go](https://github.com/NANA7MI0/dsh-purge-go) | 移植到 DSH-GO 手机版 | 最小实现：只保留提示词注入 + 引擎源码补丁 |
+| [mortyandtimo/dsh-purge-plus](https://github.com/mortyandtimo/dsh-purge-plus) | 增强分支 | 网络侧（TUN / fake-ip）扩展，与补丁兼容性无关 |
+| [c3cvld7aag/fujiang-dsh](https://github.com/c3cvld7aag/fujiang-dsh) | 纯提示词（392 KB，不碰宿主文件） | 完全不改宿主时的降级方案；顺带看清"只靠提示词"的能力上限 |
+
+找更多分支：[GitHub 搜索 `dsh-purge`](https://github.com/search?q=dsh-purge&type=repositories)（当前 390+ 个结果，按 star / 最近推送排序即可）。
+
+**用法建议**：`--doctor` 报出某条补丁 `drift` 时，先去这些仓库里搜同一条补丁的编号（例如 `#62`），大概率已经有人写出了新版锚点；抄锚点比从压缩代码里猜要快得多，抄完记得跑 `npm test` 验证。
+
 ## 说明
 
 - 改动范围是本机 `@deepseek-ai/*` 包里的渲染文案、默认策略和执行逻辑，以及用户目录下的覆盖文件与规则集。
