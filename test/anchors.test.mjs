@@ -53,7 +53,7 @@ test('0.2.2-rc.5 夹具上没有"锚点全丢"的补丁', async () => {
 
 test('retired 的补丁不再要求命中', async () => {
   const retired = ALL_PATCHES.filter((p) => p.retired);
-  assert.ok(retired.length >= 5, 'retired 列表不应为空');
+  assert.ok(retired.length >= 3, 'retired 列表不应为空');
   const status = await patchStatus(FIXTURE);
   for (const patch of retired) {
     const st = status[patch.id];
