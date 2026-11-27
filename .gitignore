@@ -35,3 +35,6 @@ default-prompt-inject.md
 
 # 兼容扫描产物
 compat-report.json
+
+# 打包校验和
+*.sha256

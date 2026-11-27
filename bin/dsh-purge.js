@@ -2,10 +2,12 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { fileURLToPath } from "node:url";
 import * as core from "../lib/core.js";
 import * as rules from "../lib/rules.js";
 import * as anchors from "../lib/anchors.js";
+import { summarizeRuntimeGuards } from "../lib/runtime-guards.js";
 
 const args = process.argv.slice(2);
 
@@ -78,6 +80,22 @@ function lastAppliedRev(home) {
   }
 }
 
+/** 插件运行日志（lib/index.js 写在 os.tmpdir() 下）。 */
+function readGuardState() {
+  try {
+    const fp = path.join(os.tmpdir(), "dsh-purge-desktop.log");
+    const size = fs.statSync(fp).size;
+    const fd = fs.openSync(fp, "r");
+    const span = Math.min(size, 256 * 1024);
+    const buf = Buffer.alloc(span);
+    fs.readSync(fd, buf, 0, span, size - span);
+    fs.closeSync(fd);
+    return summarizeRuntimeGuards(buf.toString("utf8"));
+  } catch {
+    return { state: "unknown", detail: "读不到插件日志" };
+  }
+}
+
 function readHostVersion(aiBase) {
   if (!aiBase) return "";
   for (const rel of [["dsh", "package.json"], ["package.json"]]) {
@@ -126,6 +144,11 @@ async function runDoctor() {
   if (drift.missing.length) console.log(`  未装可选包       ${drift.missing.map((r) => "#" + r.id).join(" ")}`);
   const ov = anchors.listOverrides(home);
   console.log(`  锚点覆盖         ${ov.length} 条${ov.length ? "（" + ov.map((r) => "#" + r.patchId + "[" + r.index + "]").join(" ") + "）" : ""}`);
+  const guardState = readGuardState();
+  const guardText = guardState.state === "on"
+    ? `已启用（审批=${guardState.approval ? "allow" : "原样"}, fs×${guardState.fs}${guardState.errors ? ", 报错:" + guardState.errors : ""}, ${guardState.at}）`
+    : guardState.state === "off" ? "已关闭（runtimeGuards=false）" : `未启用（${guardState.detail || "未知"}）`;
+  console.log(`  运行时守卫       ${guardText}`);
   let asar = "unpacked";
   try { asar = core.desktopAsarStillSealed() ? "sealed（补丁还没进内存，需要换包重启）" : "unpacked（已从解包目录启动）"; } catch { /* ignore */ }
   console.log(`  asar 状态        ${asar}`);

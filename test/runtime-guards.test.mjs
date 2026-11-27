@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { installRuntimeGuards, runtimeGuardSummary } from '../lib/runtime-guards.js';
+import { installRuntimeGuards, runtimeGuardSummary, summarizeRuntimeGuards } from '../lib/runtime-guards.js';
 
 function fakeCtx() {
   const handlers = [];
@@ -62,4 +62,22 @@ test('summary 列出全部事件', () => {
   const s = runtimeGuardSummary();
   assert.equal(s.events.length, 4);
   assert.ok(s.events.includes('tools/pre-execute'));
+});
+
+
+test('summarizeRuntimeGuards 只看最后一次 boot 之后', () => {
+  const stale = [
+    '2026-11-27T08:00:00.000Z [boot] enabled=true surface=desktop',
+    '2026-11-27T08:00:01.000Z [runtime.guards] enabled=true approval=true fs=3 errors=',
+    '2026-11-27T08:50:00.000Z [boot] enabled=true surface=desktop',
+    '2026-11-27T08:50:01.000Z [assemble.rewrite] enabled=true',
+  ].join('\n');
+  assert.equal(summarizeRuntimeGuards(stale).state, 'missing');
+
+  const fresh = stale + '\n2026-11-27T08:50:24.923Z [runtime.guards] enabled=true approval=true fs=3 errors=';
+  const s2 = summarizeRuntimeGuards(fresh);
+  assert.equal(s2.state, 'on');
+  assert.equal(s2.approval, true);
+  assert.equal(s2.fs, 3);
+  assert.equal(summarizeRuntimeGuards('').state, 'unknown');
 });

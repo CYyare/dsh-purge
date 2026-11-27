@@ -1,9 +1,10 @@
 name: Release
 
+# 只在打 tag 时发布：普通提交不会触发，避免每次 push master 都红/都建 release。
 on:
   push:
-    branches:
-      - master
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
@@ -14,49 +15,65 @@ concurrency:
 
 jobs:
   release:
-    if: github.repository == 'YuJunZhiXue/dsh-purge'
-    runs-on: ubuntu-latest
+    # 只在本仓库发布；fork 上跑测试但不发 release。
+    if: github.repository == 'CYyare/dsh-purge'
+    # 与本地开发环境一致（我们的夹具回归是在 Windows 上验证过的）。
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Syntax-check plugin entry
-        run: |
-          node --check lib/index.js
-          node --check lib/core.js
-          node --check lib/reapply.js
-          node --input-type=module -e "import './lib/index.js'"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
-      - name: Publish GitHub Release
+      - name: 版本一致性（tag 必须等于 package.json）
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          tag="${GITHUB_REF_NAME}"
+          echo "package=$version tag=$tag"
+          test "v$version" = "$tag"
+
+      - name: 语法门禁
+        run: |
+          set -euo pipefail
+          for f in lib/index.js lib/core.js lib/anchors.js lib/runtime-guards.js bin/dsh-purge.js; do
+            node --check "$f"
+          done
+
+      - name: 夹具回归（npm test）
+        run: npm test
+
+      - name: 打包 + 校验和
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          tgz="$(npm pack --ignore-scripts --silent | tail -n 1)"
+          node -e "
+            const fs=require('fs'),crypto=require('crypto');
+            const f=process.argv[1];
+            const d=crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+            fs.writeFileSync(f+'.sha256', d+'  '+f+'\n');
+            console.log('sha256', d);
+          " "$tgz"
+          echo "TGZ=$tgz" >> "$GITHUB_ENV"
+
+      - name: 创建 GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          version="$(node -p "require('./package.json').version")"
-          tag="v${version}"
+          tag="${GITHUB_REF_NAME}"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "already published: $tag"
             exit 0
           fi
-          first="$(head -n 1 release-notes.md | tr -d '\r')"
-          if [ "$first" != "# ${version}" ]; then
-            echo "release-notes.md 第一行必须是 # ${version}，现在是: ${first}"
-            exit 1
-          fi
-          zip="dsh-purge-${version}.zip"
-          if git rev-parse -q --verify "refs/tags/${tag}^{}" >/dev/null; then
-            commit="$(git rev-parse "refs/tags/${tag}^{}")"
-            git archive --format=zip --prefix="dsh-purge-${version}/" --output="$zip" "$commit"
-            gh release create "$tag" --title "$tag" --notes-file release-notes.md
-          else
-            git archive --format=zip --prefix="dsh-purge-${version}/" --output="$zip" HEAD
-            args=(release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file release-notes.md)
-            case "$version" in
-              *beta*|*alpha*|*rc*) args+=(--prerelease) ;;
-            esac
-            gh "${args[@]}"
-          fi
-          test -s "$zip"
-          gh release upload "$tag" "$zip" --clobber
-          echo "published https://github.com/YuJunZhiXue/dsh-purge/releases/tag/${tag}"
+          gh release create "$tag" --title "$tag" --generate-notes
+          gh release upload "$tag" "$TGZ" "$TGZ.sha256" --clobber
+          echo "published $tag"
