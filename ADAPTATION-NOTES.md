@@ -157,6 +157,36 @@ revertAll: reverted=48 errors=0 还原一致=58/58 剩余bak=0
 
 **署名**：思路来自上述 Apache-2.0 仓库，代码按本分支重写；如二次分发，请一并保留对方 NOTICE 与本文件的来源说明。
 
+## 6.10 备份补全：从 app.asar 找回原始文件（1.1.87）
+
+**现象**：1.1.85 那 5 条新补丁（#90/#91/#97/#98/#99）应用成功（77/87），但只有 1 个文件生成了 `.dshpurge.bak`，另外 4 个没有 → 单文件 `--revert` 对它们失效。
+
+**排查**：
+- 备份守卫本身是对的：拿 asar 里的**原始文件**在临时宿主上跑 `backupAll`，两个文件都正常生成了备份；
+- 复现不了当时的现场（审计只有 `applied=5`，没有备份计数），判断是"文件在 `backupAll` 之前就已经被改过"的时序问题——开机自动 reapply 与手动「应用」重叠时会出现这种空档。
+
+**修复**：新增 `scripts/backfill-backups.mjs`，只读 `app.asar(.bak)`，把补丁会碰到的文件的**原始版本**抽出来补成 `.dshpurge.bak`，然后刷新 manifest。
+
+```bash
+node scripts/backfill-backups.mjs --dry-run   # 先看会补哪些
+node scripts/backfill-backups.mjs             # 实际补 + 刷新清单
+```
+
+**关键坑（值得记）**：asar 头部是 `8 字节前缀 + pickle([total][len][json])`，文件条目用 `offset` 判定，**没有 `file` 字段**；一开始按 `node.file` 判断，结果"全部找不到文件"。
+
+**写盘前先验证 asar 与当前解包目录是同一份构建**（拿 4 个没被补丁碰过的文件逐字节比对，全部一致）——不同版本的 asar 会把文件降级。
+
+**结果**：
+
+| 项 | 值 |
+|---|---|
+| 备份文件 | 59 份（含此前 6 份） |
+| manifest | 57 条，`verifyBackups` 全部通过 |
+| 纯净性 | 59 份全部不含 `dsh-purge` 标记 |
+| 回滚验证 | 临时宿主上 `revertAll` → 2 个文件恢复为无标记原文 |
+
+现在 `--revert` 能覆盖整棵补丁树，`app.asar.bak` 退化成"连解包目录都没了"时的最后手段。
+
 ## 7. 已知边界
 
 - **retired（官方已删功能）**：#32 #53（Web 文案）、#56 #77（rewind）、#80（official minimal 自带 `tool-fs`）。不计入漂移。
