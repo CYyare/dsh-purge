@@ -1,4 +1,4 @@
-# 适配记录（上游 1.1.71 → 本分支 1.1.74）
+# 适配记录（上游 1.1.71 → 本分支 1.1.75）
 
 记录**改了什么、为什么改、怎么验证**。新版本适配时在最后追加一节。
 
@@ -80,6 +80,38 @@
 | 夹具回归 | `npm test` | `fixtures/dsh-0.2.2-rc.5/`（55 个真实文件，2.5MB）+ `test/anchors.test.mjs`；任何锚点被改坏立刻红 |
 | 夹具生成 | `npm run fixtures -- --from <aiBase> --out fixtures/<ver>` | 换了宿主版本重新生成一份，追加到夹具矩阵 |
 | 兼容扫描 | `node scripts/compat-scan.mjs --asar <app.asar>` | 直接对着 asar 统计哪几条对不上（不需要装） |
+
+
+## 6.5 备份与落盘自检（1.1.75）
+
+| 问题 | 根因 | 处理 |
+|---|---|---|
+| `resources/app` 下 0 个 `.dshpurge.bak`，`--revert` 实际是空操作 | `atomicCopyFile` 用 `rename(tmp, dst)` 落盘，而 `backupAll` 先 `open(bak,"wx")` 建了占位文件；**Windows 的 rename 不能覆盖已存在目标**，58 条全部 EPERM，占位随后被删 → 一条备份都没留下 | rename 前先删目标；`backupAll` 跳过"已经带 `[dsh-purge]` 标记"的文件（此时原文已丢，存下来只会让 revert 把补丁写回去）；`revertAll` 顺手删掉"目标与备份一致"的孤儿 bak |
+| 一条 replace 写错就能让宿主起不来 | 落盘前没有任何校验 | 新增 `checkPatchedSyntax()`：`.js/.mjs/.cjs` 写入前用 `node --check` 校验替换后全文，失败则**不写**该文件、把该条标成 `syntax_error`，其余补丁照常 |
+
+端到端验证（在纯净解包副本上跑）：
+
+```
+targets=58  backupAll: made=58 errors=0  bak 与原文一致: true
+applyPatches: applied=58 changed=48
+revertAll: reverted=48 errors=0 还原一致=58/58 剩余bak=0
+```
+
+## 6.6 Tier A 运行时守卫（1.1.75）
+
+审批、fs 观察门不再只靠改宿主源码，改为在 Cordis waterfall 上拦截（`lib/runtime-guards.js`）：
+
+| 事件 | 做法 | 替代的补丁 |
+|---|---|---|
+| `tools/pre-execute` | 先 `next()` 让下游判定照常执行，再强制返回 `{kind:"allow"}` | #5 #8 #12 #33 #48 #58 #59 #61 #62 #63 |
+| `fs/write-intent` / `fs/edit-intent` / `fs/delete-intent` | 先 `next()`，再丢弃 intent（返回 `undefined`）→ 不做读前校验 | #16 #17 |
+
+- 开关：`runtimeGuards: false` 或环境变量 `DSH_PURGE_RUNTIME_GUARDS=0`；
+- 失败安全：每个事件单独 try/catch，装不上只记 `runtime.guards` 日志，不影响其它功能；
+- 「先 next 再覆盖」而不是直接短路：不依赖宿主 waterfall 的短路语义，宿主换实现也仍然成立。
+- 这层是**叠加**在文件补丁之上的双保险：运行时守卫生效时文件补丁照样在，反之亦然。
+
+重启宿主后生效（插件从 profile 重新加载）。`purgeLog` 里会有一行 `[runtime.guards] approval=true fs=3`。
 
 ## 7. 已知边界
 
