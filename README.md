@@ -34,11 +34,12 @@ A **personal fix fork** derived from the original `YuJunZhiXue/dsh-purge` projec
 - Upstream has stopped maintaining it; nothing here speaks for upstream;
 - **The repository name and the version series (1.1.x) continue upstream's numbering for compatibility and comparison only — this does not imply upstream published, approved or endorsed this fork.**
 
-**This fork has exactly one stated purpose: repair.**
+**Positioning: a long-lived maintenance and improvement fork.**
 
-- Externally it claims only this: keep the original project **usable** on newer DeepSeek Harness builds — redo patch anchors, fix platform breakage, repair what stopped working.
-- Engineering work done along the way (regression tests, drift diagnosis, audit log, backup/rollback) is **repair done more thoroughly**, not new features.
-- **No new capability, no effectiveness work, no extra features** — and nobody is authorised to sell it on those grounds.
+- **Adapt** (the main line): keep the original project usable on newer DeepSeek Harness builds — redo patch anchors, fix platform breakage, repair what stopped working.
+- **Absorb**: continuously diff community forks and bring in the better implementations (anchor styles, mechanisms, tooling), with attribution.
+- **Extend**: add capability as needed, without changing the safety boundary or the disclaimers below — and never sold on "results".
+- **Promise nothing**: no guarantee that any feature works on your machine, no guaranteed maintenance cadence, no responsibility for outcomes (see the disclaimers).
 
 ## 2. Terms of use, provenance and attribution (non-commercial + credit)
 
@@ -89,7 +90,7 @@ The original README states the following conditions. They are quoted verbatim, h
 **2. Copyright, licence and liability boundary.** The code inherits the original MIT licence; on top of it, the original author's **non-commercial and attribution conditions** are conditions of use, adopted here **in full and applied to this fork itself** — in other words, **this repository permits no commercial use whatsoever**.
 Any commercial use that violates these terms, and all of its consequences (legal liability, claims, platform penalties), are borne by the user and are **unrelated to this fork's maintainer**.
 
-**3. Scope.** Anchors, Windows compatibility, diagnostics/audit tooling, regression tests, release pipeline. **No new offensive capability, no prompt engineering, no promised outcome.**
+**3. Scope.** Work here falls into three buckets: **repair** (anchors, Windows compatibility, crashes and rollback), **absorb** (better implementations from community forks), **extend** (diagnostics, audit, engineering, and new capability where needed). All three are recorded in [CHANGELOG.md](CHANGELOG.md). **No promised outcome and no guaranteed availability.**
 
 **4. Technical risk is yours; consequences are unrelated to this repository.** This project **modifies host program files**, **disables approval and sandbox restrictions**, and **injects custom prompts**. Known consequences include: an unbootable or corrupted host, lost or rewritten sessions/settings/data, uncontrolled model output, unexpected token spend, failed updates, and a host reinstall. Back up the machine first and prefer a disposable environment.
 

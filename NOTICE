@@ -1,8 +1,8 @@
 dsh-purge — NOTICE
 ==================
 
-This repository is a personal fix fork. Read this before using, copying,
-modifying or redistributing anything here.
+This repository is a personal maintenance and improvement fork. Read this before
+using, copying, modifying or redistributing anything here.
 
 1. Origin
 ---------
@@ -14,7 +14,14 @@ This fork is maintained by an individual. It is not the original project and is
 not affiliated with, endorsed by, or connected to the original author, the
 mirror maintainer, or DeepSeek.
 
-2. Attribution (the original author's requirement, quoted verbatim)
+2. Scope of work
+--------------
+Adapt: keep the plugin usable on newer DeepSeek Harness builds (patch anchors,
+platform fixes). Absorb: adopt better implementations from community forks, with
+attribution. Extend: add capability and tooling as needed. None of it carries any
+promise of results, and none of it relaxes the terms in this NOTICE.
+
+3. Attribution (the original author's requirement, quoted verbatim)
 --------------------------------------------------------------------
     **非盈利公益项目，严禁任何主体用于商业售卖、付费倒卖或黑灰产牟利，仅供技术参考。**
 
@@ -28,7 +35,7 @@ or prompts, you must credit the author and name the source repository
 YuJunZhiXue/dsh-purge. Hiding the source, or passing the work off as your own,
 will be pursued by the author.
 
-3. Licence and non-commercial condition
+4. Licence and non-commercial condition
 ---------------------------------------
 The code inherits the original MIT licence; LICENSE keeps the original copyright
 notice (Copyright (c) 2026 小杨) unchanged, and this fork's changes are released
@@ -52,7 +59,7 @@ in full and applies it to itself:
   BREACH    permission terminates immediately; every consequence falls on the
             user and is unrelated to this fork's maintainer.
 
-4. Third-party components
+5. Third-party components
 -------------------------
 Patches #90, #91, #97, #98 and #99 in this fork follow ideas from
 CallMeGuLab/dsh-purge-safe (Apache-2.0); the implementations here are rewritten
@@ -61,7 +68,7 @@ against this fork's own anchors. See ADAPTATION-NOTES.md §6.9.
 Other projects referenced in the README are listed for provenance only and remain
 the property of their respective owners.
 
-5. No warranty, consequences are the user's
+6. No warranty, consequences are the user's
 -------------------------------------------
 PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
 BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
@@ -73,13 +80,13 @@ technical failure, data loss, account bans, financial loss, legal liability — 
 borne by the user. The maintainer accepts no responsibility, offers no
 compensation, and does not promise continued maintenance.
 
-6. No legal advice
+7. No legal advice
 ------------------
 Nothing in this repository is legal advice. Whether you are authorised to test a
 system, who granted that authorisation, and how far it reaches, are yours to
 determine and defend.
 
-7. Objection and removal
+8. Objection and removal
 ------------------------
 Rights holders who believe content here is improper may open an issue; it will be
 adjusted or removed promptly. This fork deliberately does not reproduce the
