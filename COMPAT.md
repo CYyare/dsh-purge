@@ -61,3 +61,31 @@ node scripts/compat-scan.mjs --ai-base "<解包目录>/dsh/node_modules/@deepsee
 ```
 
 注意：`compat-scan.mjs` 只认 `replacements` 字段，少数用其它结构的补丁会显示 miss —— 以宿主里 `/purge status` 的结果为准。
+
+## 锚点重定向（升级当天自救）
+
+宿主升级把某条补丁的锚点改掉时，不必改源码、不必等发版：
+
+```sh
+dsh-purge --doctor                                    # 看哪几条漂移，会直接给出重锚命令
+dsh-purge --reanchor set 62 2 "<从宿主里拷的原文片段>"   # 只换这条补丁的第 3 个 pattern
+dsh-purge --reanchor list                             # 查看现有覆盖
+dsh-purge --reanchor clear 62                         # 删除覆盖，恢复出厂锚点
+```
+
+覆盖写在 `$DSH_HOME/dsh-purge/anchor-overrides.json`，只影响 apply/status 时构造出的补丁副本，不改 `ALL_PATCHES` 本体。确认稳定后再把新锚点写进 `lib/compat-022.js` 发版。
+
+## 回归测试与夹具
+
+```sh
+npm test                                                          # 用真实 0.2.2-rc.5 源码跑锚点回归
+npm run fixtures -- --from <aiBase> --out fixtures/dsh-<ver>      # 换宿主版本时生成新夹具
+```
+
+夹具只收"补丁会碰到的文件"（当前 55 个、2.5MB），逐条确认每条补丁要么能命中、要么有 `retired` / `missing` 的正当理由。
+
+## 日常维护三步
+
+1. `dsh-purge --doctor`：版本、覆盖度、漂移、asar 状态、注入体积；
+2. 有漂移就用 `--reanchor set` 先自救，稳定后写进 `lib/compat-022.js`；
+3. `npm test` 全绿再打 tag 发版。
