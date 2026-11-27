@@ -929,8 +929,7 @@ var SessionCommandController = class {
 					});
 					if (this.ctx.agents.get(agent.id) !== agent) throw new RemoteError("session/not-found", `session "${agent.id}" was disposed during prompt admission`, { sessionId: agent.id });
 					const binding = __addDisposableResource$5(env_2, this.ctx.fileUploads.bindPrompt(agent, admission.receiptIds, request.requestId), false);
-					if (request.mode === "steer") agent.steer(message);
-					else agent.followup(message);
+					agent.followup(message); // [dsh-purge-85] user prompt always next-turn (kill steer→next-step race)
 					binding.commit();
 				} catch (e_2) {
 					env_2.error = e_2;
@@ -1048,7 +1047,7 @@ var SessionCommandController = class {
 			}
 			case "steer":
 				agent.inbox.remove(request.itemId);
-				agent.steer(message);
+				agent.followup(message); // [dsh-purge-86] queue steer → next-turn
 				break;
 			/* v8 ignore next 2 -- closed-union exhaustiveness guard */
 			default: assertNever(request.action, "queue action");

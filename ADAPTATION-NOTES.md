@@ -132,6 +132,31 @@ revertAll: reverted=48 errors=0 还原一致=58/58 剩余bak=0
 
 已验证：假宿主上 backupAll → manifest 1 条 → verify 1/1 通过 → 篡改后 stale=1。
 
+## 6.9 从社区分支移植：预设保持 + 原生 system 槽（1.1.85）
+
+来源：[CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe) v2.0.2（Apache-2.0）。
+按本分支的锚点与标记重写，编号沿用他们的 90/91/97/98/99 便于交叉对照；实现与他们的差异见下。
+
+| # | 补丁 | 做什么 | 与他们的差异 |
+|---|---|---|---|
+| 97 | BLANK_REUSE_KEEPS_RECORDED_PRESET | 冷路径：请求没点名预设、会话日志里已记了预设 → 沿用记下的那个 | 无 |
+| 98 | LIVE_BLANK_REUSE_KEEPS_RECORDED_PRESET | 活着的空白会话同样沿用已记的预设，堵住 `reuseLive()` 把红队写回 standard | 无 |
+| 99 | TYPES_AGENT_CLAIM_KEEPS_RECORDED_PRESET | `lib/types/agent.js` 是独立入口（16 空格缩进），同一份 `claim()` 也要修 | 无 |
+| 90 | OPENAI_NATIVE_SYSTEM_ROLE | openai-completions：把挂着的提示词补进 `context.systemPrompt`，保证进原生 system 槽 | ① 我们的 `__dshPurgeHungPrompt` 是**函数**，取值统一走「函数/字符串都认」；② **不额外造 `role=system` 消息**——宿主自己会把 systemPrompt 写进原生槽，多造一条会变成两条 system |
+| 91 | ANTHROPIC_NATIVE_PARAMS_SYSTEM | anthropic-messages：同上，进 `params.system` | 同上 |
+
+**为什么 97/98/99 值得修**：DSH 0.2 里「在空白会话下拉选红队 → 发一句 → 变回标准模式」是真实故障链——
+`claim()` 在请求没带 `agentPreset` 时按部署默认（standard）compose，`reuseLive()` 再补一条
+`agent-preset/selected: standard`，用户刚选的意图被静默抹掉。会话日志里那条 redteam 是**已记下的意图**，
+请求没点名时不该覆盖。
+
+**验证**：
+- 逐条对真实宿主文件验证：5 条全部命中，替换后 `node --check` 通过；
+- 干跑（宿主镜像）：`applied=3`（正是 97/98/99；90/91 的目标在 `@earendil-works/pi-ai`，不在 aiBase 之下，夹具覆盖不到，靠上一条验证）；
+- `npm test` 25 项全绿，夹具 58 个文件（新增 `dsh-api-session-controller` 两个文件）。
+
+**署名**：思路来自上述 Apache-2.0 仓库，代码按本分支重写；如二次分发，请一并保留对方 NOTICE 与本文件的来源说明。
+
 ## 7. 已知边界
 
 - **retired（官方已删功能）**：#32 #53（Web 文案）、#56 #77（rewind）、#80（official minimal 自带 `tool-fs`）。不计入漂移。

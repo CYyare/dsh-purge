@@ -1,12 +1,14 @@
 {
   "source": "C:/Users/34532/Documents/deepseek-harness/default-workspace/.compat/pristine/dsh/node_modules/@deepseek-ai",
   "at": "2026-11-27T08:20:45.579Z",
-  "files": 56,
-  "bytes": 2636908,
+  "files": 58,
+  "bytes": 2822151,
   "paths": [
     "dsh-acp-app\\cordis.patch.yml",
     "dsh-agent-instructions\\lib\\index.js",
     "dsh-agent-loop\\lib\\index.js",
+    "dsh-api-session-controller/lib/index.js",
+    "dsh-api-session-controller/lib/types/agent.js",
     "dsh-api-session-controller\\lib\\index.js",
     "dsh-app-boot\\lib\\index.js",
     "dsh-base\\cordis.patch.yml",
