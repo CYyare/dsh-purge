@@ -8,6 +8,7 @@ import * as core from "../lib/core.js";
 import * as rules from "../lib/rules.js";
 import * as anchors from "../lib/anchors.js";
 import * as doctor from "../lib/doctor.js";
+import * as audit from "../lib/audit.js";
 import { summarizeRuntimeGuards } from "../lib/runtime-guards.js";
 
 const args = process.argv.slice(2);
@@ -43,7 +44,7 @@ function printStatus(state) {
 }
 
 async function main() {
-  const mode = args.find((a) => ["--apply", "--revert", "--uninstall", "--status", "--edit", "--doctor", "--reanchor", "--help"].includes(a));
+  const mode = args.find((a) => ["--apply", "--revert", "--uninstall", "--status", "--edit", "--doctor", "--reanchor", "--audit", "--help"].includes(a));
 
   if (mode === "--help" || args.includes("-h")) {
     console.log(`dsh-purge 用法:
@@ -56,6 +57,7 @@ async function main() {
   dsh-purge --reanchor list                    查看锚点覆盖
   dsh-purge --reanchor set <id> <index> <原文>  用宿主里的真实片段重锚一条补丁
   dsh-purge --reanchor clear <id> [index]      删除覆盖（恢复出厂锚点）
+  dsh-purge --audit [N]  查看最近 N 条 apply/revert/reanchor 记录（默认 20）
   dsh-purge --help       帮助`);
     return;
   }
@@ -83,15 +85,23 @@ function lastAppliedRev(home) {
 
 /** 插件运行日志（lib/index.js 写在 os.tmpdir() 下）。 */
 function readGuardState() {
+  // 日志会翻滚成 .1：两份都给 summarizeRuntimeGuards，取最后一次 [boot] 之后的记录。
   try {
-    const fp = path.join(os.tmpdir(), "dsh-purge-desktop.log");
-    const size = fs.statSync(fp).size;
-    const fd = fs.openSync(fp, "r");
-    const span = Math.min(size, 256 * 1024);
-    const buf = Buffer.alloc(span);
-    fs.readSync(fd, buf, 0, span, size - span);
-    fs.closeSync(fd);
-    return summarizeRuntimeGuards(buf.toString("utf8"));
+    const base = path.join(os.tmpdir(), "dsh-purge-desktop.log");
+    let text = "";
+    for (const fp of [`${base}.1`, base]) {
+      try {
+        const size = fs.statSync(fp).size;
+        const span = size; // 日志上限 2MB，直接整份读，别把开头的 [boot] 切掉
+        const fd = fs.openSync(fp, "r");
+        const buf = Buffer.alloc(span);
+        fs.readSync(fd, buf, 0, span, size - span);
+        fs.closeSync(fd);
+        text += buf.toString("utf8");
+      } catch { /* 这一份不存在 */ }
+    }
+    if (!text) return { state: "unknown", detail: "读不到插件日志" };
+    return summarizeRuntimeGuards(text);
   } catch {
     return { state: "unknown", detail: "读不到插件日志" };
   }
@@ -137,6 +147,7 @@ async function runDoctor(rawArgs = []) {
     overrides: anchors.listOverrides(home),
     guards: readGuardState(),
     asarSealed,
+    backups: aiBase ? core.verifyBackups(aiBase, home) : { checked: 0, ok: 0, missing: [], stale: [] },
     injectBytes,
     settleGuard: fs.existsSync(path.join(home || "", "dsh-purge", "settle-restart.guard")),
   });
@@ -149,6 +160,23 @@ async function runDoctor(rawArgs = []) {
   console.log(doctor.renderDoctorReport(report));
 }
 
+
+function runAudit(rawArgs) {
+  const i = rawArgs.indexOf("--limit");
+  const n = i >= 0 ? Number(rawArgs[i + 1]) : 20;
+  const rows = audit.readAudit(core.findDshHome(), { limit: Number.isFinite(n) && n > 0 ? n : 20 });
+  if (!rows.length) {
+    console.log("还没有审计记录（apply / revert / reanchor 之后才会有）");
+    return;
+  }
+  for (const row of rows) {
+    const rest = Object.entries(row)
+      .filter(([k]) => k !== "at" && k !== "op")
+      .map(([k, v]) => `${k}=${Array.isArray(v) ? v.length : v}`)
+      .join(" ");
+    console.log(`${row.at}  ${String(row.op).padEnd(9)} ${rest}`);
+  }
+}
 function runReanchor(rawArgs) {
   const sub = String(rawArgs[1] || "list").toLowerCase();
   const home = core.findDshHome();
@@ -181,6 +209,7 @@ function runReanchor(rawArgs) {
 }
   if (mode === "--doctor") { await runDoctor(args); return; }
   if (mode === "--reanchor") { runReanchor(args); return; }
+  if (mode === "--audit") { runAudit(args); return; }
   const state = await core.gatherState();
   console.log(printStatus(state));
   console.log("");

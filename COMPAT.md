@@ -69,6 +69,7 @@ node scripts/compat-scan.mjs --ai-base "<解包目录>/dsh/node_modules/@deepsee
 ```sh
 dsh-purge --doctor                                    # 看哪几条漂移，会直接给出重锚命令
 dsh-purge --doctor --json                             # 同一份数据的结构化输出（贴 issue / 给脚本用）
+dsh-purge --audit 20                                  # 最近 20 条 apply/revert/reanchor 记录
 dsh-purge --reanchor set 62 2 "<从宿主里拷的原文片段>"   # 只换这条补丁的第 3 个 pattern
 dsh-purge --reanchor list                             # 查看现有覆盖
 dsh-purge --reanchor clear 62                         # 删除覆盖，恢复出厂锚点

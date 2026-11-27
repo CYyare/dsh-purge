@@ -119,6 +119,19 @@ revertAll: reverted=48 errors=0 还原一致=58/58 剩余bak=0
 - **`--doctor --json`**：新增 `lib/doctor.js`，`buildDoctorReport()` 归一化数据，文本与 JSON 共用同一份；单测锁住版本 stale、漂移索引、retired/missing 排序。
 - 顺带修掉一个真 bug：`toList()` 原来用 `filter(Boolean)`，会把漂移索引 `0` 过滤掉——写测试才发现。
 
+## 6.8 审计 / 备份清单 / 单实例写入（1.1.80）
+
+| 项 | 做法 | 解决的问题 |
+| --- | --- | --- |
+| 审计日志 | `lib/audit.js` → `$DSH_HOME/dsh-purge/audit.jsonl`，追加 `{at, op, ok, ...}`；apply / revert / reanchor 都记；超过 1MB 滚成 `.1`；写入失败静默 | 出问题时能回答「谁在什么时候动过宿主」 |
+| 备份清单 | `lib/backup-manifest.js`：每次 backupAll 记 `{file, bak, sha256, size}` 到 `dsh-purge/backups/<aiBase 哈希>/manifest.json`；`verifyBackups()` 校验；`revertAll` 恢复前核对 sha，备份被篡改就报 `bak_corrupt` 并跳过 | `.dshpurge.bak` 只是「旁边那个文件」，时间一长没人知道它还有效 |
+| 单实例写入 | 新增 `currentInstallAppDir()`；`enumeratePatchAiBases()` 默认只保留**当前运行安装**下的 aiBase，其它安装只上报不落盘；`DSH_PURGE_ALL_HOSTS=1` 放开 | 机器上装了两份 DSH 时，避免顺手把另一份也改了 |
+| CLI | `dsh-purge --audit [N]`；`--doctor` 增加「备份 N/M 校验通过」 | 排查与巡检 |
+
+测试：`test/audit-manifest.test.mjs`（审计读写 / 损坏行 / 不可写；清单写入 / 篡改 / 删除 / 缺失）。
+
+已验证：假宿主上 backupAll → manifest 1 条 → verify 1/1 通过 → 篡改后 stale=1。
+
 ## 7. 已知边界
 
 - **retired（官方已删功能）**：#32 #53（Web 文案）、#56 #77（rewind）、#80（official minimal 自带 `tool-fs`）。不计入漂移。
