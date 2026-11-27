@@ -2,40 +2,71 @@
   <img src="docs/banner.svg" alt="dsh-purge" width="720">
 </p>
 
-<h1 align="center">⚔️ DeepSeek Harness cybersecurity red-team tool (dsh-purge)</h1>
+<h1 align="center">⚔️ dsh-purge — personal fix fork</h1>
 
-<p align="center"><strong>Version 1.1.71</strong></p>
+<p align="center"><strong>Version 1.1.85 · targets dsh 0.2.2-rc.5</strong></p>
 
 <p align="center">
-  <em>DeepSeek Harness jailbreak: every model, swap prompts per model. Default prompt for 小码酱. Please star ⭐ If you build on this, see Attribution required.</em>
+  <em>A <b>personal maintenance fork</b> of the community mirror: only version adaptation, patch-anchor upkeep and engineering hardening. No change of purpose, no new capability.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/YuJunZhiXue/dsh-purge/stargazers"><img src="https://img.shields.io/github/stars/YuJunZhiXue/dsh-purge?logo=github&label=Stars" alt="GitHub stars"></a>
-  <a href="https://github.com/YuJunZhiXue/dsh-purge/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-65a30d?style=flat" alt="MIT license"></a>
-  <a href="https://awesome-dsh-plugin.com"><img src="https://awesome-dsh-plugin.com/badge.svg" alt="awesome · DSH plugin"></a>
-  <a href="https://deepseek.stream/plugins/dsh-purge"><img src="https://img.shields.io/badge/Hub-dsh--purge-1a73e8" alt="DeepSeek Harness Hub"></a>
-  <a href="https://www.deepseek.com/harness/"><img src="https://img.shields.io/badge/dsh-0.2.0--rc.2-blue" alt="DSH"></a>
-  <br>
+  <a href="https://github.com/CYyare/dsh-purge"><img src="https://img.shields.io/badge/repo-CYyare%2Fdsh--purge-1a73e8" alt="repo"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-65a30d" alt="MIT license"></a>
+  <a href="https://www.deepseek.com/harness/"><img src="https://img.shields.io/badge/dsh-0.2.2--rc.5-blue" alt="DSH"></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff" alt="Node.js">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000" alt="JavaScript">
-</p>
-
-<p align="center">
-  <a href="https://dsh-plugin.org/plugins/yujunzhixue/dsh-purge"><img src="https://dsh-plugin.org/badges/listed.svg" alt="Listed on dsh-plugin.org"></a>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> | <a href="README.zh-CN.md">中文</a>
 </p>
 
-> **Updates paused.** The author has no steady income for now because of work. Maintenance is on hold: no new releases, issues / PRs are not taken, and new dsh versions are not guaranteed. The repo stays usable; see Sponsor below. When maintenance resumes, this README will say so.
+---
 
-> **Official Web and the official desktop app are both supported.** Official `dsh web` uses profile `web`. The official desktop EXE (DeepSeek Harness **0.2.0-rc.2**) uses profile `desktop`. Install and Apply them separately. This release targets dsh 0.2 only. Older dsh builds need the matching older plugin. Community Desktop is not maintained.
+## ⚠️ Read this first (notice and disclaimer)
+
+1. **This is neither an official project nor the original project.**
+   It is a **personal fix fork** of [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge) (the upstream `YuJunZhiXue/dsh-purge` repository has been deleted). It is maintained by an individual with **no affiliation, partnership or endorsement** from the original author, the mirror maintainers, or DeepSeek. Upstream has paused work; this fork does not speak for it.
+
+2. **The original license and attribution requirements still apply.**
+   This fork keeps the original `LICENSE` (MIT) and the attribution requirements stated in the original README. If you redistribute or build on it, keep the original author credits and the provenance notes in this file.
+
+3. **Scope of this fork is "make it run on newer dsh again".**
+   Patch anchors, Windows-specific backup/rename issues, audit and diagnostic tooling, regression tests. **No new offensive capability is added, and no outcome is promised.**
+
+4. **You bear the consequences of use.**
+   This project **modifies host program files**, **turns off approval and sandbox restrictions**, and **injects custom prompts into the model**. That can break the host beyond repair, lose or rewrite data, sessions and settings, produce uncontrolled model output, and create account or terms-of-service risk. Back up first, and prefer a disposable environment.
+
+5. **Illegal use is prohibited.**
+   Do not use it for unauthorized penetration testing, intrusion, fraud, privacy violations, or anything that breaks the laws of your jurisdiction or the target's terms of service. Whether authorization exists, who granted it, and how far it reaches are yours to determine and defend.
+
+6. **No warranty.**
+   Provided "AS IS" under the MIT license, without express or implied warranty of fitness, correctness, safety or compliance. The author and contributors are not liable for any direct or indirect damages.
+
+7. **Data handling.**
+   The plugin does not report anything over the network. Audit logs, patch backups and injected prompts stay on your machine under `$DSH_HOME`, for you to keep or delete.
+
+> Installing, applying or using this project means you have read and accepted all of the above. If you do not accept them, stop and delete it now.
+
+---
+
+> **Official Web and the official desktop app are both supported.** Official `dsh web` uses profile `web`. The official desktop EXE (DeepSeek Harness **0.2.2-rc.5**, adapted by this fork) uses profile `desktop`. Install and Apply them separately. This release targets dsh 0.2 only. Older dsh builds need the matching older plugin. Community Desktop is not maintained.
 >
 > Adding the plugin to a profile does not patch the host. Click **dsh-purge** beside the session title → **Clean** → **Apply**. A successful Apply restarts; an unfinished Apply does not. After the restart, start a new chat — that is when the inject enters the session.
 >
-> Node.js **≥18**. Windows no-flash needs **Node ≥22**. Hub one-click and the commands below both install the npm package `dsh-purge`.
+> Node.js **≥18**. Windows no-flash needs **Node ≥22**.
+>
+> **Install source caveat**: the npm package `dsh-purge` is currently a placeholder stub (`0.0.0-stage`, 331 bytes) — that is not this plugin. Install this fork from this repository instead:
+>
+> ```sh
+> cd /path/to/dsh-purge
+> # link the checkout into a profile (desktop shown):
+> # 1) add "dsh-purge": "link:<absolute path of this checkout>" under dependencies in profile/package.json
+> # 2) create a junction/symlink node_modules/dsh-purge pointing at the checkout
+> # 3) append "dsh-purge" to dsh.profile.bundles
+> ```
+>
+> Then restart the host and click Apply.
 
 ## Contents
 

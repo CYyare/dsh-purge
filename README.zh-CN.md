@@ -2,40 +2,71 @@
   <img src="docs/banner.svg" alt="dsh-purge" width="720">
 </p>
 
-<h1 align="center">⚔️ DeepSeek Harness 网络安全红队工具（dsh-purge）</h1>
+<h1 align="center">⚔️ dsh-purge 个人修复版</h1>
 
-<p align="center"><strong>Version 1.1.71</strong></p>
+<p align="center"><strong>Version 1.1.85 · 适配 dsh 0.2.2-rc.5</strong></p>
 
 <p align="center">
-  <em>DeepSeek Harness 破甲：让所有模型都能破甲，不同模型可换不同提示词；默认提示词面向国模「小码酱」。Jailbreak for every model — swap prompts per model. 求 Star 收藏 ⭐ 如要二开，请查看署名要求部分</em>
+  <em>这是社区镜像的<b>个人自用修复分支</b>：只做新版本适配、补丁锚点维护与工程化加固，不改变原项目定位、不新增能力。</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/YuJunZhiXue/dsh-purge/stargazers"><img src="https://img.shields.io/github/stars/YuJunZhiXue/dsh-purge?logo=github&label=Stars" alt="GitHub stars"></a>
-  <a href="https://github.com/YuJunZhiXue/dsh-purge/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-65a30d?style=flat" alt="MIT license"></a>
-  <a href="https://awesome-dsh-plugin.com"><img src="https://awesome-dsh-plugin.com/badge.svg" alt="awesome · DSH plugin"></a>
-  <a href="https://deepseek.stream/plugins/dsh-purge"><img src="https://img.shields.io/badge/Hub-dsh--purge-1a73e8" alt="DeepSeek Harness Hub"></a>
-  <a href="https://www.deepseek.com/harness/"><img src="https://img.shields.io/badge/dsh-0.2.0--rc.2-blue" alt="DSH"></a>
-  <br>
+  <a href="https://github.com/CYyare/dsh-purge"><img src="https://img.shields.io/badge/repo-CYyare%2Fdsh--purge-1a73e8" alt="repo"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-65a30d" alt="MIT license"></a>
+  <a href="https://www.deepseek.com/harness/"><img src="https://img.shields.io/badge/dsh-0.2.2--rc.5-blue" alt="DSH"></a>
   <img src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff" alt="Node.js">
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000" alt="JavaScript">
-</p>
-
-<p align="center">
-  <a href="https://dsh-plugin.org/plugins/yujunzhixue/dsh-purge"><img src="https://dsh-plugin.org/badges/listed.svg" alt="Listed on dsh-plugin.org"></a>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> | <a href="README.zh-CN.md">中文</a>
 </p>
 
-> **暂停更新。** 作者因工作安排，近期没有稳定收入，项目维护暂时搁置：不再发版、暂不收 issue / PR，也不保证跟进新版 dsh。仓库仍可自用；赞助见下方。恢复维护时会在本 README 说明。
+---
 
-> **官方 Web 和官方桌面端都支持。** 官方 `dsh web` 用 profile `web`；官方桌面 EXE（DeepSeek Harness **0.2.0-rc.2**）用 profile `desktop`。两边分开安装、分开点「应用」。当前版本只适配 dsh 0.2；更早的 dsh 用对应的老版本插件。社区桌面端不维护。
+## ⚠️ 使用前必读（声明与免责）
+
+1. **这不是官方项目，也不是原项目。**
+   本仓库是 [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge)（上游 `YuJunZhiXue/dsh-purge` 已删库）的**个人修复分支**，由个人维护，与原作者、上游镜像维护者、DeepSeek 官方**均无隶属、合作或背书关系**。上游已宣布暂停更新，本分支不代表上游立场。
+
+2. **原项目的著作权与署名要求继续有效。**
+   本分支沿用原 `LICENSE`（MIT），并保留原 README 的署名要求。二次分发、二次开发请一并保留原作者信息与本文件的来源说明。
+
+3. **本分支只做"让它在新版 dsh 上继续能跑"的修复。**
+   范围限定在：补丁锚点适配、Windows 平台的备份/改名等兼容问题、审计与诊断工具、回归测试。**不新增攻击能力，也不承诺任何使用效果。**
+
+4. **使用后果由使用者自行承担。**
+   本项目会**修改宿主程序文件**、**关闭审批与沙箱限制**、**向模型注入自定义提示词**，可能导致：宿主损坏或无法启动、数据/会话/配置丢失或被改写、模型输出不可控、账号与服务条款风险。请先备份，并优先在可丢弃的环境里试用。
+
+5. **禁止用于违法用途。**
+   不得用于未授权的渗透测试、入侵、诈骗、侵犯隐私，或其他违反所在地法律与目标服务条款的行为。是否需要授权、由谁授权、授权范围多大，由使用者自行确认并承担全部责任。
+
+6. **不提供任何担保。**
+   按 MIT 协议"AS IS"提供，不对可用性、正确性、安全性、合规性作任何明示或默示担保；作者与贡献者不对任何直接或间接损失负责。
+
+7. **数据处理。**
+   插件不联网上报。审计日志、补丁备份、注入提示词全部留在本机 `$DSH_HOME` 下，由使用者自行保管与删除。
+
+> 继续安装、应用或使用本项目，即表示你已阅读并接受以上全部条款。不接受请立即停止使用并删除。
+
+---
+
+> **官方 Web 和官方桌面端都支持。** 官方 `dsh web` 用 profile `web`；官方桌面 EXE（DeepSeek Harness **0.2.2-rc.5**，本分支已适配）用 profile `desktop`。两边分开安装、分开点「应用」。当前版本只适配 dsh 0.2；更早的 dsh 用对应的老版本插件。社区桌面端不维护。
 >
 > 写进 profile 还不会改宿主。点会话标题旁的 **dsh-purge** → **清洗** → **应用**。成功会自动重启；补丁没打完不重启。重启后新开一轮对话，注入才进当前会话。
 >
-> Node.js **≥18**。Windows 无闪窗需要 **Node ≥22**。插件市场一键安装和下面的命令都走 npm 包 `dsh-purge`。
+> Node.js **≥18**。Windows 无闪窗需要 **Node ≥22**。
+>
+> **安装源注意**：npm 上的 `dsh-purge` 目前是一个空壳占位包（`0.0.0-stage`，331 字节），装它不是本插件。本分支请从本仓库安装：
+>
+> ```sh
+> cd C:\Users\<你>\Documents\GitHub\dsh-purge
+> # 把本仓库链接进 profile（示例为 desktop）
+> # 1) profile/package.json 的 dependencies 加 "dsh-purge": "link:<本仓库绝对路径>"
+> # 2) 在 node_modules 下建同名 junction 指向本仓库
+> # 3) dsh.profile.bundles 末尾追加 "dsh-purge"
+> ```
+>
+> 装好后同样需要「重启 → 点应用」。
 
 ## 目录
 
