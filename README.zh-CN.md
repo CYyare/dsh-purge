@@ -4,7 +4,7 @@
 
 <h1 align="center">⚔️ dsh-purge 个人修复版</h1>
 
-<p align="center"><strong>Version 1.1.88 · 适配 dsh 0.2.2-rc.5</strong></p>
+<p align="center"><strong>Version 1.1.89 · 适配 dsh 0.2.2-rc.5</strong></p>
 
 <p align="center">
   <em>社区镜像的<b>个人自用修复分支</b>：只做新版本适配、补丁锚点维护与工程化加固，不改变原项目定位、不新增能力、不承诺任何效果。</em>
@@ -27,27 +27,57 @@
 
 ## 一、这是什么
 
-本仓库是 [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge)（上游 `YuJunZhiXue/dsh-purge` 已删库）的**个人修复分支**。
+本仓库是原始项目 `YuJunZhiXue/dsh-purge`（**已删库**）经社区镜像 [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge) 转存后的**个人修复分支**。
 
 - 由个人维护，**不是官方项目，也不是原项目**；
-- 与原作者、镜像维护者、DeepSeek 官方**均无隶属、合作、雇佣或背书关系**；
-- 上游已宣布暂停更新；本分支的任何表述都不代表上游立场。
+- 与原始作者、镜像维护者、DeepSeek 官方**均无隶属、合作、雇佣或背书关系**；
+- 上游已停止维护；本分支的任何表述都不代表上游立场；
+- **仓库名与版本号沿用上游序列（1.1.x）仅为了兼容与对比方便，不代表上游发布、认可或背书。**
 
 **它做的事情只有一件**：让这套插件在新版 DeepSeek Harness 上继续跑得起来，并把过程中踩到的坑记录下来。
 
-## 二、声明与免责（使用前必读）
+## 二、来源与署名（遵循原作者要求）
+
+原项目 README 对使用者的要求如下，本仓库**原文引用并照办**：
+
+> **非盈利公益项目，严禁任何主体用于商业售卖、付费倒卖或黑灰产牟利，仅供技术参考。**
+>
+> **署名要求**：借用本项目的名称、思路、代码或提示词，必须署名，并写明来源仓库：`YuJunZhiXue/dsh-purge`。
+> 不署名、隐瞒来源、改头换面据为己有，作者将依法追究责任。
+
+（引自原项目 README「非盈利公益项目」「署名要求」两节；原文存档见 [docs/ORIGINAL-README.zh-CN.md](docs/ORIGINAL-README.zh-CN.md)）
+
+**来源链**：
+
+| 层级 | 仓库 | 说明 |
+|---|---|---|
+| 原始项目 | `YuJunZhiXue/dsh-purge` | 作者：小杨（`LICENSE` 中版权声明的权利人）。**仓库已被作者删除** |
+| 社区镜像 | [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge) | 上游删库前的全量转存；本分支代码基线为 1.1.71 |
+| 本分支 | [CYyare/dsh-purge](https://github.com/CYyare/dsh-purge) | 个人修复版，当前 1.1.89 |
+
+**本分支为此做的具体承诺**：
+
+1. **保留原作者版权声明**：`LICENSE` 原样保留 `Copyright (c) 2026 小杨`；本分支的修改同样以 MIT 发布，不另行主张权利。
+2. **完全非商业**：不售卖、不收费、不设付费墙、不接赞助、不挂广告、不借本项目导流。任何以本仓库名义收费的行为均与本分支无关且不被授权。
+3. **不隐去来源**：README、`package.json`、CLI 帮助、`ADAPTATION-NOTES.md` 均标注原始项目与镜像来源；文件名、目录结构保留原项目的命名，便于对照。
+4. **第三方代码同样署名**：`#90 #91 #97 #98 #99` 的思路来自 [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe)（Apache-2.0），本分支按其锚点重写实现，详见 `ADAPTATION-NOTES.md` 6.9 节。
+5. **不复述点名内容**：原 README 设有一节「违规商用公示」，点名了具体的第三方账号。本分支**不复述其中任何主体名称**，仅保留链接存档，避免传播未经本分支核实的指控。
+
+> 如果你要基于本分支继续开发或分发，请至少保留：原作者署名、来源仓库 `YuJunZhiXue/dsh-purge`、本仓库地址，以及上面第 1、2 条。
+
+## 三、声明与免责（使用前必读）
 
 **1. 非官方来源**
-本仓库为个人维护的第三方分支，未获原作者或 DeepSeek 官方授权、审核或推荐。仓库名称、徽章、描述中的任何措辞均不构成官方认可。
+本仓库为个人维护的第三方分支，未获原作者、镜像维护者或 DeepSeek 官方授权、审核或推荐。仓库名称、徽章、措辞均不构成官方认可。
 
-**2. 著作权与署名**
-本分支沿用原项目的 `LICENSE`（MIT），并保留原 README 的署名要求。二次分发、二次开发请一并保留原作者信息与本文件的来源说明。原项目作者的"禁止商业售卖/付费倒卖"要求，本分支同样遵守并转达。
+**2. 著作权与责任边界**
+代码按 MIT 授权使用；但原作者在 README 中另行提出的**非商业与署名要求**（见上一节）属于使用条件，本分支照办并转达。违反这些条件的商业使用，须由使用者自行承担后果，与本分支无关。
 
 **3. 范围限定**
 本分支只做：补丁锚点适配、Windows 平台兼容修复、诊断与审计工具、回归测试、发布流水线。**不新增攻击能力，不改进提示词效果，不承诺任何使用结果。**
 
 **4. 技术风险自负**
-本项目会**修改宿主程序文件**、**关闭审批与沙箱限制**、**向模型注入自定义提示词**。已知可能导致：宿主无法启动或损坏、会话/配置/数据丢失或被改写、模型输出不可控、Token 消耗异常、更新失败、需重装宿主。请先做好整机备份，并优先在可丢弃的环境里试用。
+本项目会**修改宿主程序文件**、**关闭审批与沙箱限制**、**向模型注入自定义提示词**。已知可能导致：宿主无法启动或损坏、会话/配置/数据丢失或被改写、模型输出不可控、Token 消耗异常、更新失败、需重装宿主。请先备份整机，并优先在可丢弃的环境里试用。
 
 **5. 合法使用**
 不得用于未授权的渗透测试、入侵、诈骗、侵犯隐私，或其他违反所在地法律与目标服务条款的行为。**是否存在授权、由谁授权、范围多大，由使用者自行确认并承担全部责任**；本分支不提供任何法律意见。
@@ -66,7 +96,7 @@
 
 > 安装、应用或使用本项目，即表示你已阅读并接受以上全部条款。不接受请立即停止使用并删除相关文件。
 
-## 三、本分支实际改了什么
+## 四、本分支实际改了什么
 
 | 方向 | 内容 |
 |---|---|
@@ -81,7 +111,7 @@
 
 细节与逐轮记录见 [ADAPTATION-NOTES.md](ADAPTATION-NOTES.md) 与 [COMPAT.md](COMPAT.md)。
 
-## 四、参考项目（社区分支）
+## 五、参考项目（社区分支）
 
 修复新版本时先看这些仓库，能少走弯路（都非本仓库维护）：
 
@@ -90,14 +120,14 @@
 | [mmparko/dsh-purge](https://github.com/mmparko/dsh-purge) | 上游全量镜像，本分支的 1.1.71 基线 |
 | [kingcharleslzy-ai/dsh-purge](https://github.com/kingcharleslzy-ai/dsh-purge) | 锚点重定向、漂移诊断、上百条测试、发布纪律 |
 | [ZXEB/dsh-purge](https://github.com/ZXEB/dsh-purge) | 0.2.2-rc.5 适配记录、版本矩阵 |
-| [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe) | 同版本（0.2.2-rc.5）的另一套实现，锚点可交叉核对 |
+| [CallMeGuLab/dsh-purge-safe](https://github.com/CallMeGuLab/dsh-purge-safe) | 同版本（0.2.2-rc.5）的另一套实现；本分支 #90/#91/#97/#98/#99 的思路来源 |
 | [realMisakaMikoto/dsh-purge](https://github.com/realMisakaMikoto/dsh-purge) | `#40` 的另一种修法 |
 | [NANA7MI0/dsh-purge-go](https://github.com/NANA7MI0/dsh-purge-go) | 最小实现（只留提示词注入 + 引擎补丁） |
 | [c3cvld7aag/fujiang-dsh](https://github.com/c3cvld7aag/fujiang-dsh) | 完全不改宿主时的纯提示词方案 |
 
 更多分支：[GitHub 搜索 `dsh-purge`](https://github.com/search?q=dsh-purge&type=repositories)。
 
-## 五、安装与维护（本分支）
+## 六、安装与维护（本分支）
 
 npm 上的 `dsh-purge` 是**空壳占位包**（`0.0.0-stage`，331 字节），装它不是本插件。本分支请从本仓库安装：
 
@@ -125,7 +155,7 @@ npm test && npm run release        # 回归 + 出包
 
 > 以下内容摘自上游项目的原始 README，**保留原样仅用于说明本仓库的来源与它原本的定位**。
 >
-> **本分支不对下述内容作任何承诺、担保或背书**：其中描述的一切能力、效果、适用范围与支持情况均属原作者的表述，不代表本分支已验证或认可。完整原文见 [docs/ORIGINAL-README.zh-CN.md](docs/ORIGINAL-README.zh-CN.md)。
+> **本分支不对下述内容作任何承诺、担保或背书**：其中描述的一切能力、效果、适用范围与支持情况均属原作者的表述，不代表本分支已验证或认可。完整原文（含署名要求、赞助、违规商用公示、界面预览、目录结构等全部章节）见 [docs/ORIGINAL-README.zh-CN.md](docs/ORIGINAL-README.zh-CN.md)。
 
 **dsh-purge** 是装在本机官方 [DeepSeek Harness](https://www.deepseek.com/harness/) 上的网络安全红队评测插件。官方 **Web**（`dsh web`）和官方 **桌面端**（EXE）都支持，两边分开装、分开应用。
 
@@ -138,4 +168,4 @@ Harness 不只是把问题交给模型。它还会在运行时改提示词、审
 | **演练台** | 正式版内置。授权后查看资产、技能和本机环境。只用于你有权管理的本机、离线靶标或已书面授权的演练 |
 | **宿主策略** | 调整默认文案、权限策略和工具上限。官方能力保留，不另写一套身份 |
 
-原项目的署名要求、赞助、违规商用公示、界面预览、目录结构等完整章节，见 [docs/ORIGINAL-README.zh-CN.md](docs/ORIGINAL-README.zh-CN.md)。
+原项目的完整章节（含「非盈利公益项目」「署名要求」「违规商用公示」「适配范围」「安装」「界面预览」「目录结构」「使用」「本地校验」「工作原理」「还原」「路径探测」「更新」「说明」）见 [docs/ORIGINAL-README.zh-CN.md](docs/ORIGINAL-README.zh-CN.md)。
