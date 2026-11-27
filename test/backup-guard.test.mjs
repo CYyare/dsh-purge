@@ -36,7 +36,7 @@ test('纯净文件会建备份；已打补丁的文件不再建', async () => {
   const before = baksOf(root).length;
   assert.equal(before, 0);
 
-  const first = await backupAll(root, ALL_PATCHES);
+  const first = await backupAll(root, ALL_PATCHES, { dshHome: root });
   assert.ok(first.made.length > 0, '纯净文件应该建出备份');
 
   const report = await applyPatches(root, ALL_PATCHES);
@@ -44,7 +44,7 @@ test('纯净文件会建备份；已打补丁的文件不再建', async () => {
 
   // 删掉旧备份，再跑一次：文件已是补丁后内容 → 不应该再建
   for (const rel of baksOf(root)) fs.unlinkSync(path.join(root, rel) + '.dshpurge.bak');
-  const second = await backupAll(root, ALL_PATCHES);
+  const second = await backupAll(root, ALL_PATCHES, { dshHome: root });
   assert.equal(second.made.length, 0, '已打补丁的文件不应再生成备份（否则 revert 等于没退）');
 });
 
@@ -53,7 +53,7 @@ test('回滚能把内容恢复成原文', async () => {
   const target = path.join(root, 'dsh-agent-instructions', 'lib', 'index.js');
   const original = fs.readFileSync(target);
 
-  await backupAll(root, ALL_PATCHES);
+  await backupAll(root, ALL_PATCHES, { dshHome: root });
   await applyPatches(root, ALL_PATCHES);
   assert.ok(!fs.readFileSync(target).equals(original), 'apply 之后内容应变化');
 
